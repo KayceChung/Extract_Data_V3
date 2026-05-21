@@ -10,7 +10,7 @@ const APIS = {
 // Mapping API field → Vietnamese label (khớp với SHEET_HEADERS trong Code.gs)
 const DRIVER_COLS = [
   { keys: ['id','Id'],                                    label: 'ID' },
-  { keys: ['name','full_name','fullName','ho_ten'],        label: 'Họ tên' },
+  { keys: ['name','fullname','full_name','fullName','ho_ten'], label: 'Họ tên' },
   { keys: ['phone','mobile','phone_number','dien_thoai'],  label: 'Số điện thoại' },
   { keys: ['email'],                                      label: 'Email' },
   { keys: ['id_card','identity_card','cmnd','cccd'],       label: 'CMND/CCCD' },
@@ -72,13 +72,24 @@ function esc(str) {
 
 function extractArray(data) {
   if (Array.isArray(data)) return data;
-  if (data && typeof data === 'object') {
-    for (const k of ['data','items','rows','results','routes','list','records','trips']) {
-      if (Array.isArray(data[k])) return data[k];
+  if (!data || typeof data !== 'object') return null;
+  const KEYS = ['items','data','rows','results','routes','list','records','trips'];
+  // Top-level named keys
+  for (const k of KEYS) {
+    if (Array.isArray(data[k])) return data[k];
+  }
+  // One level deeper: response.data.items (pattern của driver/vehicle API)
+  for (const k of KEYS) {
+    const nested = data[k];
+    if (nested && typeof nested === 'object' && !Array.isArray(nested)) {
+      for (const k2 of KEYS) {
+        if (Array.isArray(nested[k2])) return nested[k2];
+      }
     }
-    for (const v of Object.values(data)) {
-      if (Array.isArray(v)) return v;
-    }
+  }
+  // Fallback: first array value anywhere at top level
+  for (const v of Object.values(data)) {
+    if (Array.isArray(v)) return v;
   }
   return null;
 }
