@@ -7,6 +7,40 @@ const APIS = {
   vehicle: 'https://nhaxe.vexere.com/api/v1/vehicle?filter[where][comp_id]=46249&filter[page]=1&filter[per_page]=500&filter[where][is_prg_status]=1'
 };
 
+// Mapping API field → Vietnamese label (khớp với SHEET_HEADERS trong Code.gs)
+const DRIVER_COLS = [
+  { keys: ['id','Id'],                                    label: 'ID' },
+  { keys: ['name','full_name','fullName','ho_ten'],        label: 'Họ tên' },
+  { keys: ['phone','mobile','phone_number','dien_thoai'],  label: 'Số điện thoại' },
+  { keys: ['email'],                                      label: 'Email' },
+  { keys: ['id_card','identity_card','cmnd','cccd'],       label: 'CMND/CCCD' },
+  { keys: ['license_number','license','bang_lai'],         label: 'Số bằng lái' },
+  { keys: ['license_type','hang_bang','license_class'],    label: 'Hạng bằng' },
+  { keys: ['birthday','birth_date','dob','ngay_sinh'],     label: 'Ngày sinh' },
+  { keys: ['address','dia_chi'],                          label: 'Địa chỉ' },
+  { keys: ['status','trang_thai','is_active'],             label: 'Trạng thái' },
+];
+
+const VEHICLE_COLS = [
+  { keys: ['id','Id'],                                               label: 'ID' },
+  { keys: ['plate_number','plate','bien_so','license_plate','Plate'], label: 'Biển số' },
+  { keys: ['type','type_name','vehicle_type','loai_xe'],             label: 'Loại xe' },
+  { keys: ['total_seats','seat_count','seats','capacity'],           label: 'Số ghế' },
+  { keys: ['color','colour','mau_xe'],                               label: 'Màu sắc' },
+  { keys: ['brand','manufacturer','hang_xe'],                        label: 'Hãng xe' },
+  { keys: ['model'],                                                 label: 'Model' },
+  { keys: ['year','manufacture_year','nam_sx'],                      label: 'Năm SX' },
+  { keys: ['status','trang_thai'],                                   label: 'Trạng thái' },
+  { keys: ['inspection_date','ngay_dang_kiem','expire_date'],        label: 'Ngày đăng kiểm' },
+];
+
+function resolveCol(item, keys) {
+  for (const k of keys) {
+    if (item[k] != null) return String(item[k]);
+  }
+  return '';
+}
+
 const TRIP_FIELDS = [
   'Id','Name','Code','Time','ArrivalTime','OfficialTime',
   'VehicleInfo','VehicleId','RouteInfo',
@@ -592,17 +626,10 @@ async function exportToSheets(type) {
       throw new Error('Không tìm được dữ liệu. Response: ' + preview);
     }
 
-    // Lấy tất cả keys có giá trị đơn giản (không lồng object)
-    const allKeys = [...new Set(arr.slice(0, 50).flatMap(r => Object.keys(r || {})))];
-    const columns = allKeys.filter(k => {
-      const v = arr[0][k];
-      return v == null || typeof v !== 'object';
-    });
-
-    const rows = arr.map(item => columns.map(c => {
-      const v = item[c];
-      return v == null ? '' : String(v);
-    }));
+    // Dùng column mapping Vietnamese để output nhất quán với sheet headers
+    const colDefs = type === 'driver' ? DRIVER_COLS : VEHICLE_COLS;
+    const columns = colDefs.map(c => c.label);
+    const rows    = arr.map(item => colDefs.map(({ keys }) => resolveCol(item, keys)));
 
     setSheetsMsg('', `Đang ghi ${rows.length} bản ghi vào Sheets...`);
     const result = await postToGas(gasUrl, { secret: SECRET, type, columns, rows });
