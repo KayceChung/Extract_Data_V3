@@ -396,21 +396,17 @@ async function fetchTrips() {
       `Đang tải chuyến (${dates.length} ngày)...`;
 
     const results = await Promise.all(dates.map(async (ymd) => {
+      // API returns positional arrays; pass route_id as param if selected
       const url = `https://nhaxe.vexere.com/api/v1/trip/get_trips?comp_id=46249`
                 + `&fields=${encodeURIComponent(TRIP_FIELDS)}`
-                + `&date=${toApiDate(ymd)}&is_show_on_bks=1`;
+                + `&date=${toApiDate(ymd)}`
+                + (routeId ? `&route_id=${routeId}` : '')
+                + `&is_show_on_bks=1`;
       try {
         const res  = await fetch(url, { headers: hdrs });
         if (!res.ok) return [];
         const data = await res.json();
-        let arr    = extractArray(data) || [];
-        if (routeId) {
-          arr = arr.filter(t => {
-            const ri = t.RouteInfo;
-            if (!ri) return false;
-            return String(ri.id || ri.Id || ri.route_id || '') === String(routeId);
-          });
-        }
+        const arr  = extractArray(data) || [];
         return arr.map(t => ({ ...t, _ymd: ymd }));
       } catch { return []; }
     }));
@@ -438,10 +434,9 @@ function buildDriverMap(drivers) {
 }
 
 function getDriverNames(trip, driverMap) {
-  const ids = [
-    trip.FirstDriverId, trip.SecondDriverId, trip.ThirdDriverId,
-    trip.FirstAssistantId, trip.SecondAssistantId, trip.ThirdAssistantId
-  ].filter(v => v != null && v !== 0 && v !== '');
+  // API returns positional array: indices 9-14 = First/Second/ThirdDriverId, First/Second/ThirdAssistantId
+  const ids = [trip[9], trip[10], trip[11], trip[12], trip[13], trip[14]]
+    .filter(v => v != null && v !== 0 && v !== '');
 
   if (!ids.length) return '—';
   return ids.map(id => driverMap[String(id)] || ('ID:' + id)).join(' / ');
@@ -459,12 +454,14 @@ function renderTrips(trips, driverMap) {
   }
 
   tbody.innerHTML = trips.map((t, i) => {
-    const bks     = getVehicleBKS(t.VehicleInfo);
+    // API positional: 0=Id,1=Name,2=Code,3=Time,5=OfficialTime,
+    //   6=VehicleInfo,9-14=DriverIds,15=StatusInfo
+    const bks     = getVehicleBKS(t[6]);
     const drivers = getDriverNames(t, driverMap);
-    const route   = getRouteName(t.RouteInfo);
-    const status  = getStatusLabel(t.StatusInfo);
-    const time    = formatTime(t.Time || t.OfficialTime);
-    const code    = t.Code || t.Name || t.Id || '—';
+    const route   = t[1] || '—';
+    const status  = getStatusLabel(t[15]);
+    const time    = formatTime(t[3] || t[5]);
+    const code    = t[2] || t[0] || '—';
     const date    = toDisplayDate(t._ymd);
 
     return `<tr>
