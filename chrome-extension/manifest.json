@@ -9,7 +9,9 @@
   ],
   "host_permissions": [
     "*://*.vexere.com/*",
-    "https://*.railway.app/*"
+    "https://*.railway.app/*",
+    "https://script.google.com/*",
+    "https://script.googleusercontent.com/*"
   ],
   "background": {
     "service_worker": "background.js"

@@ -121,6 +121,7 @@
   <div class="tabs">
     <button class="tab-btn active" id="tabBtnData">Dữ liệu nhanh</button>
     <button class="tab-btn"        id="tabBtnTrip">🗓 Chuyến xe</button>
+    <button class="tab-btn"        id="tabBtnSheets">📊 Sheets</button>
   </div>
 
   <!-- ═══ Tab: Dữ liệu nhanh ═══ -->
@@ -208,6 +209,48 @@
       </div>
     </div>
 
+  </div>
+
+  <!-- ═══ Tab: Google Sheets ═══ -->
+  <div id="panelSheets" style="display:none">
+
+    <div style="margin-bottom:10px">
+      <label class="form-label">Google Apps Script URL</label>
+      <div style="display:flex;gap:6px;margin-top:4px">
+        <input type="text" id="gasUrl"
+               placeholder="https://script.google.com/macros/s/.../exec"
+               style="flex:1;border:1px solid #ccc;border-radius:4px;padding:5px 8px;font-size:11px;outline:none">
+        <button class="btn-grey" id="btnSaveGasUrl" style="padding:5px 12px;font-size:11px;flex:none">Lưu</button>
+        <button class="btn-grey" id="btnCheckGas"   style="padding:5px 12px;font-size:11px;flex:none">⚡ Test</button>
+      </div>
+    </div>
+
+    <div class="divider"></div>
+    <div class="section-title" style="margin-bottom:8px">Xuất dữ liệu lên Sheets</div>
+
+    <div style="display:flex;flex-direction:column;gap:8px">
+
+      <div class="action-row" style="margin:0">
+        <button class="btn-main" id="btnExportDriver">👤 Lái xe → Sheets</button>
+        <button class="btn-main" id="btnExportVehicle">🚐 Phương tiện → Sheets</button>
+      </div>
+
+      <div style="border:1px solid #eee;border-radius:4px;padding:10px">
+        <div class="form-label" style="margin-bottom:8px">Xuất Chuyến xe theo khoảng ngày</div>
+        <div class="form-row" style="margin-bottom:8px">
+          <span class="form-label">Từ:</span>
+          <input type="date" id="sheetDateFrom">
+          <span class="form-label" style="margin-left:8px">Đến:</span>
+          <input type="date" id="sheetDateTo">
+        </div>
+        <button class="btn-fetch-trip" id="btnExportTrip" style="margin-bottom:0">
+          🗓 Chuyến xe → Sheets
+        </button>
+      </div>
+
+    </div>
+
+    <div id="sheetsMsg" style="font-size:12px;min-height:18px;text-align:center;margin-top:8px;padding:4px 0"></div>
   </div>
 
   <script src="popup.js"></script>

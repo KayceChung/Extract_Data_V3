@@ -161,8 +161,9 @@ document.addEventListener('DOMContentLoaded', () => {
   });
 
   // Tab switching
-  document.getElementById('tabBtnData').addEventListener('click', () => switchTab('data'));
-  document.getElementById('tabBtnTrip').addEventListener('click', () => switchTab('trip'));
+  document.getElementById('tabBtnData').addEventListener('click',   () => switchTab('data'));
+  document.getElementById('tabBtnTrip').addEventListener('click',   () => switchTab('trip'));
+  document.getElementById('tabBtnSheets').addEventListener('click', () => switchTab('sheets'));
 
   // Data tab buttons
   document.getElementById('btn-route')  .addEventListener('click', () => fetchQuick('route',   'Tuyến xe'));
@@ -180,6 +181,20 @@ document.addEventListener('DOMContentLoaded', () => {
   document.getElementById('btnFetchTrips')   .addEventListener('click', fetchTrips);
   document.getElementById('btnCopyTrip')     .addEventListener('click', copyTripData);
 
+  // Sheets tab
+  document.getElementById('btnSaveGasUrl')   .addEventListener('click', saveGasUrl);
+  document.getElementById('btnCheckGas')     .addEventListener('click', checkGas);
+  document.getElementById('btnExportDriver') .addEventListener('click', () => exportToSheets('driver'));
+  document.getElementById('btnExportVehicle').addEventListener('click', () => exportToSheets('vehicle'));
+  document.getElementById('btnExportTrip')   .addEventListener('click', exportTripsToSheets);
+
+  // Default dates for sheets tab
+  document.getElementById('sheetDateFrom').value = today;
+  document.getElementById('sheetDateTo').value   = today;
+
+  // Load saved GAS URL
+  loadGasUrl();
+
   // Auto-load routes on start
   loadRoutes();
 });
@@ -188,10 +203,12 @@ document.addEventListener('DOMContentLoaded', () => {
    Tabs
 ══════════════════════════════════════ */
 function switchTab(name) {
-  document.getElementById('panelData').style.display = name === 'data' ? 'block' : 'none';
-  document.getElementById('panelTrip').style.display = name === 'trip' ? 'block' : 'none';
-  document.getElementById('tabBtnData').classList.toggle('active', name === 'data');
-  document.getElementById('tabBtnTrip').classList.toggle('active', name === 'trip');
+  document.getElementById('panelData').style.display   = name === 'data'   ? 'block' : 'none';
+  document.getElementById('panelTrip').style.display   = name === 'trip'   ? 'block' : 'none';
+  document.getElementById('panelSheets').style.display = name === 'sheets' ? 'block' : 'none';
+  document.getElementById('tabBtnData').classList.toggle('active',   name === 'data');
+  document.getElementById('tabBtnTrip').classList.toggle('active',   name === 'trip');
+  document.getElementById('tabBtnSheets').classList.toggle('active', name === 'sheets');
 }
 
 /* ══════════════════════════════════════
@@ -495,4 +512,171 @@ function copyTripData() {
     btn.textContent = '✓ Copied!';
     setTimeout(() => { btn.textContent = '⎘ Copy JSON'; }, 1800);
   });
+}
+
+/* ══════════════════════════════════════
+   Google Sheets export
+══════════════════════════════════════ */
+function setSheetsMsg(cls, text) {
+  const el = document.getElementById('sheetsMsg');
+  el.className = cls;
+  el.textContent = text;
+}
+
+async function loadGasUrl() {
+  const { gasUrl } = await chrome.storage.local.get('gasUrl');
+  if (gasUrl) document.getElementById('gasUrl').value = gasUrl;
+}
+
+function saveGasUrl() {
+  const url = document.getElementById('gasUrl').value.trim();
+  chrome.storage.local.set({ gasUrl: url });
+  setSheetsMsg('msg-ok', url ? '✓ Đã lưu URL' : '✓ Đã xóa URL');
+}
+
+async function checkGas() {
+  const gasUrl = document.getElementById('gasUrl').value.trim();
+  if (!gasUrl) { setSheetsMsg('msg-err', '✗ Chưa nhập GAS URL'); return; }
+  const btn = document.getElementById('btnCheckGas');
+  btn.disabled = true;
+  setSheetsMsg('', 'Đang kiểm tra...');
+  try {
+    const res  = await fetch(gasUrl, { redirect: 'follow' });
+    const data = await res.json();
+    if (data.ok) {
+      const info = (data.sheets || []).map(s => `${s.name}(${s.records})`).join(', ');
+      setSheetsMsg('msg-ok', '✓ Kết nối OK' + (info ? ' — ' + info : ''));
+    } else {
+      setSheetsMsg('msg-err', '✗ ' + (data.error || 'GAS trả lỗi'));
+    }
+  } catch (e) {
+    setSheetsMsg('msg-err', '✗ Không kết nối được: ' + e.message);
+  }
+  btn.disabled = false;
+}
+
+async function postToGas(gasUrl, payload) {
+  const res = await fetch(gasUrl, {
+    method:   'POST',
+    redirect: 'follow',
+    headers:  { 'Content-Type': 'text/plain;charset=utf-8' },
+    body:     JSON.stringify(payload),
+  });
+  return res.json();
+}
+
+async function exportToSheets(type) {
+  const gasUrl = document.getElementById('gasUrl').value.trim();
+  if (!gasUrl) { setSheetsMsg('msg-err', '✗ Chưa nhập GAS URL'); return; }
+
+  const btnId = type === 'driver' ? 'btnExportDriver' : 'btnExportVehicle';
+  const btn   = document.getElementById(btnId);
+  btn.disabled = true;
+  setSheetsMsg('', 'Đang tải dữ liệu từ VeXeRe...');
+
+  try {
+    const { lastHeaders } = await chrome.storage.local.get('lastHeaders');
+    if (!lastHeaders) throw new Error('Chưa có headers — mở nhaxe.vexere.com trước');
+    const hdrs = { accept: 'application/json', ...lastHeaders };
+
+    const res  = await fetch(APIS[type], { headers: hdrs });
+    if (!res.ok) throw new Error('API trả HTTP ' + res.status);
+    const data = await res.json();
+    const arr  = extractArray(data) || [];
+    if (!arr.length) throw new Error('API không có dữ liệu');
+
+    // Lấy tất cả keys có giá trị đơn giản (không lồng object)
+    const allKeys = [...new Set(arr.slice(0, 50).flatMap(r => Object.keys(r || {})))];
+    const columns = allKeys.filter(k => {
+      const v = arr[0][k];
+      return v == null || typeof v !== 'object';
+    });
+
+    const rows = arr.map(item => columns.map(c => {
+      const v = item[c];
+      return v == null ? '' : String(v);
+    }));
+
+    setSheetsMsg('', `Đang ghi ${rows.length} bản ghi vào Sheets...`);
+    const result = await postToGas(gasUrl, { secret: SECRET, type, columns, rows });
+    if (result.ok) {
+      setSheetsMsg('msg-ok', `✓ Đã lưu ${result.written} bản ghi → sheet "${result.sheet}"`);
+    } else {
+      throw new Error(result.error || 'GAS lỗi không xác định');
+    }
+  } catch (e) {
+    setSheetsMsg('msg-err', '✗ ' + e.message);
+  }
+  btn.disabled = false;
+}
+
+async function exportTripsToSheets() {
+  const gasUrl = document.getElementById('gasUrl').value.trim();
+  if (!gasUrl) { setSheetsMsg('msg-err', '✗ Chưa nhập GAS URL'); return; }
+
+  const dateFrom = document.getElementById('sheetDateFrom').value;
+  const dateTo   = document.getElementById('sheetDateTo').value;
+  if (!dateFrom || !dateTo) { setSheetsMsg('msg-err', '✗ Vui lòng chọn ngày'); return; }
+  if (dateFrom > dateTo)    { setSheetsMsg('msg-err', '✗ Ngày bắt đầu phải ≤ ngày kết thúc'); return; }
+
+  const dates = getDatesInRange(dateFrom, dateTo);
+  if (dates.length > 31) { setSheetsMsg('msg-err', '✗ Tối đa 31 ngày'); return; }
+
+  const btn = document.getElementById('btnExportTrip');
+  btn.disabled = true;
+  setSheetsMsg('', 'Đang tải dữ liệu...');
+
+  try {
+    const { lastHeaders } = await chrome.storage.local.get('lastHeaders');
+    if (!lastHeaders) throw new Error('Chưa có headers — mở nhaxe.vexere.com trước');
+    const hdrs = { accept: 'application/json', ...lastHeaders };
+
+    // Tải danh sách tài xế để mapping tên
+    setSheetsMsg('', 'Đang tải danh sách tài xế...');
+    const driverRes  = await fetch(APIS.driver, { headers: hdrs });
+    const driverData = await driverRes.json();
+    const driverMap  = buildDriverMap(extractArray(driverData) || []);
+
+    // Tải chuyến xe song song theo từng ngày
+    setSheetsMsg('', `Đang tải chuyến xe (${dates.length} ngày)...`);
+    const results = await Promise.all(dates.map(async (ymd) => {
+      const url = `https://nhaxe.vexere.com/api/v1/trip/get_trips?comp_id=46249`
+                + `&fields=${encodeURIComponent(TRIP_FIELDS)}`
+                + `&date=${toApiDate(ymd)}&is_show_on_bks=1`;
+      try {
+        const res  = await fetch(url, { headers: hdrs });
+        if (!res.ok) return [];
+        const data = await res.json();
+        return (extractArray(data) || []).map(t => ({ ...t, _ymd: ymd }));
+      } catch { return []; }
+    }));
+
+    const allTrips = results.flat();
+    if (!allTrips.length) throw new Error('Không có chuyến nào trong khoảng thời gian này');
+
+    // Chuyển sang dạng bảng rõ ràng
+    const columns = ['Ngày', 'Mã chuyến', 'Tên chuyến', 'Giờ đi', 'BKS', 'Tài xế', 'Trạng thái', 'Tổng ghế', 'Đã đặt'];
+    const rows = allTrips.map(t => [
+      t._ymd,
+      String(t[2] || t[0] || ''),
+      String(t[1] || ''),
+      formatTime(t[3] || t[5]),
+      getVehicleBKS(t[6]),
+      getDriverNames(t, driverMap),
+      getStatusLabel(t[15]),
+      t[16] != null ? String(t[16]) : '',
+      t[17] != null ? String(t[17]) : '',
+    ]);
+
+    setSheetsMsg('', `Đang ghi ${rows.length} chuyến vào Sheets...`);
+    const result = await postToGas(gasUrl, { secret: SECRET, type: 'trip', columns, rows });
+    if (result.ok) {
+      setSheetsMsg('msg-ok', `✓ Đã lưu ${result.written} chuyến → sheet "${result.sheet}"`);
+    } else {
+      throw new Error(result.error || 'GAS lỗi không xác định');
+    }
+  } catch (e) {
+    setSheetsMsg('msg-err', '✗ ' + e.message);
+  }
+  btn.disabled = false;
 }
