@@ -1,0 +1,33 @@
+{
+  "name": "vexere-extension",
+  "displayName": "VeXeRe Data Fetcher",
+  "description": "Extension lấy dữ liệu tuyến, tài xế, phương tiện từ VeXeRe API với header tự động.",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": ">=1.70.0"
+  },
+  "categories": [
+    "Other"
+  ],
+  "activationEvents": [
+    "onCommand:vexere.openPanel"
+  ],
+  "main": "./src/extension.js",
+  "contributes": {
+    "commands": [
+      {
+        "command": "vexere.openPanel",
+        "title": "Nhà xe: Lấy dữ liệu"
+      }
+    ]
+  },
+  "scripts": {
+    "package": "vsce package"
+  },
+  "devDependencies": {
+    "@types/vscode": "^1.70.0"
+  },
+  "dependencies": {
+    "@anthropic-ai/sdk": "^0.97.1"
+  }
+}

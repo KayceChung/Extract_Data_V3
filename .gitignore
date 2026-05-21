@@ -1,0 +1,13 @@
+node_modules/
+
+# Chứa token/cookie thực — không commit
+.vexere-headers.json
+
+# Build output
+*.vsix
+out/
+dist/
+
+# OS
+.DS_Store
+Thumbs.db

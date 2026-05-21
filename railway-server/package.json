@@ -1,0 +1,12 @@
+{
+  "name": "vexere-relay",
+  "version": "1.0.0",
+  "description": "Relay server – nhận headers từ Chrome extension, cấp cho VS Code extension",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

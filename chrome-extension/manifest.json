@@ -1,0 +1,21 @@
+{
+  "manifest_version": 3,
+  "name": "VeXeRe Header Capture",
+  "version": "1.1.0",
+  "description": "Tự động capture headers từ nhaxe.vexere.com và gửi lên Railway relay server",
+  "permissions": [
+    "webRequest",
+    "storage"
+  ],
+  "host_permissions": [
+    "*://*.vexere.com/*",
+    "https://*.railway.app/*"
+  ],
+  "background": {
+    "service_worker": "background.js"
+  },
+  "action": {
+    "default_popup": "popup.html",
+    "default_title": "VeXeRe Header Capture"
+  }
+}

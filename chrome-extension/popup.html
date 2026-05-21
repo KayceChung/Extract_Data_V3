@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body { width: 300px; padding: 16px; font-family: -apple-system, Arial, sans-serif; font-size: 13px; color: #1e1e1e; background: #fff; }
+    h3 { font-size: 14px; font-weight: 600; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+    .row { display: flex; justify-content: space-between; align-items: center; padding: 6px 0; border-bottom: 1px solid #f0f0f0; }
+    .row:last-of-type { border-bottom: none; }
+    .key { color: #555; font-size: 12px; }
+    .val { font-weight: 500; color: #111; font-size: 12px; max-width: 170px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+    .badge { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 11px; font-weight: 500; }
+    .badge-ok   { background: #d4edda; color: #155724; }
+    .badge-warn { background: #fff3cd; color: #856404; }
+    .badge-err  { background: #f8d7da; color: #721c24; }
+    .divider { height: 1px; background: #eee; margin: 12px 0; }
+    .relay-url { font-size: 11px; color: #888; word-break: break-all; margin-bottom: 12px; }
+    button { width: 100%; padding: 8px; background: #0078d4; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 500; margin-bottom: 6px; }
+    button:hover { background: #106ebe; }
+    button:disabled { background: #aaa; cursor: not-allowed; }
+    #msg { font-size: 12px; min-height: 16px; text-align: center; }
+    .msg-ok  { color: #155724; }
+    .msg-err { color: #721c24; }
+    .token-preview { font-family: monospace; font-size: 11px; color: #666; background: #f5f5f5; padding: 6px 8px; border-radius: 4px; margin-top: 10px; max-height: 48px; overflow: hidden; word-break: break-all; }
+  </style>
+</head>
+<body>
+  <h3>🚌 VeXeRe Header Capture</h3>
+
+  <div class="row">
+    <span class="key">Capture status</span>
+    <span id="captureStatus"><span class="badge badge-warn">Chưa có</span></span>
+  </div>
+  <div class="row">
+    <span class="key">Lần cuối sync</span>
+    <span class="val" id="lastSync">—</span>
+  </div>
+  <div class="row">
+    <span class="key">Relay server</span>
+    <span id="relayStatus"><span class="badge badge-warn">Chưa biết</span></span>
+  </div>
+
+  <div id="tokenPreview" class="token-preview" style="display:none"></div>
+
+  <div class="divider"></div>
+
+  <button id="btnSync">Gửi lại headers lên Railway</button>
+  <button id="btnCheck" style="background:#6c757d">Kiểm tra Railway</button>
+  <div id="msg"></div>
+
+  <script src="popup.js"></script>
+</body>
+</html>
