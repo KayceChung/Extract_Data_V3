@@ -11,7 +11,7 @@ const APIS = {
 const DRIVER_COLS = [
   { keys: ['id','Id'],                                    label: 'ID' },
   { keys: ['name','fullname','full_name','fullName','ho_ten'], label: 'Họ tên' },
-  { keys: ['phone','mobile','phone_number','dien_thoai'],  label: 'Số điện thoại' },
+  { keys: ['phone','mobile','phone_number','mobile_number','telephone','sdt','dien_thoai','contact_phone'], label: 'Số điện thoại' },
   { keys: ['email'],                                      label: 'Email' },
   { keys: ['id_card','identity_card','cmnd','cccd'],       label: 'CMND/CCCD' },
   { keys: ['license_number','license','bang_lai'],         label: 'Số bằng lái' },
@@ -32,6 +32,8 @@ const VEHICLE_COLS = [
   { keys: ['year','manufacture_year','nam_sx'],                      label: 'Năm SX' },
   { keys: ['status','trang_thai'],                                   label: 'Trạng thái' },
   { keys: ['inspection_date','ngay_dang_kiem','expire_date'],        label: 'Ngày đăng kiểm' },
+  { keys: ['frame_number','so_khung','chassis_number'],             label: 'Số khung' },
+  { keys: ['machine_number','so_may','engine_number'],              label: 'Số máy' },
 ];
 
 function resolveCol(item, keys) {

@@ -33,7 +33,7 @@ const SHEET_HEADERS = {
   vehicle: [
     'ID', 'Biển số', 'Loại xe', 'Số ghế',
     'Màu sắc', 'Hãng xe', 'Model', 'Năm SX',
-    'Trạng thái', 'Ngày đăng kiểm',
+    'Trạng thái', 'Ngày đăng kiểm', 'Số khung', 'Số máy',
   ],
   trip: [
     'Ngày', 'Mã chuyến', 'Tên chuyến', 'Giờ đi',
