@@ -582,8 +582,15 @@ async function exportToSheets(type) {
     const res  = await fetch(APIS[type], { headers: hdrs });
     if (!res.ok) throw new Error('API trả HTTP ' + res.status);
     const data = await res.json();
+    // Hiện lỗi rõ nếu API trả error body
+    if (data && typeof data === 'object' && !Array.isArray(data) && data.error) {
+      throw new Error('API lỗi: ' + data.error + ' — Thử mở lại nhaxe.vexere.com để làm mới headers');
+    }
     const arr  = extractArray(data) || [];
-    if (!arr.length) throw new Error('API không có dữ liệu');
+    if (!arr.length) {
+      const preview = JSON.stringify(data).slice(0, 150);
+      throw new Error('Không tìm được dữ liệu. Response: ' + preview);
+    }
 
     // Lấy tất cả keys có giá trị đơn giản (không lồng object)
     const allKeys = [...new Set(arr.slice(0, 50).flatMap(r => Object.keys(r || {})))];
@@ -652,7 +659,7 @@ async function exportTripsToSheets() {
     }));
 
     const allTrips = results.flat();
-    if (!allTrips.length) throw new Error('Không có chuyến nào trong khoảng thời gian này');
+    if (!allTrips.length) throw new Error('Không có chuyến nào — thử mở rộng khoảng ngày hoặc làm mới headers');
 
     // Chuyển sang dạng bảng rõ ràng
     const columns = ['Ngày', 'Mã chuyến', 'Tên chuyến', 'Giờ đi', 'BKS', 'Tài xế', 'Trạng thái', 'Tổng ghế', 'Đã đặt'];
