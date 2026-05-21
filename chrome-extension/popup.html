@@ -100,13 +100,13 @@
   <!-- API buttons -->
   <div class="section-title">Lấy dữ liệu</div>
   <div class="api-grid">
-    <button class="api-btn" id="btn-route"   onclick="fetchAPI('route',   'Tuyến xe')">
+    <button class="api-btn" id="btn-route">
       <span class="api-icon">🚌</span>Tuyến xe
     </button>
-    <button class="api-btn" id="btn-driver"  onclick="fetchAPI('driver',  'Tài xế')">
+    <button class="api-btn" id="btn-driver">
       <span class="api-icon">👤</span>Tài xế
     </button>
-    <button class="api-btn" id="btn-vehicle" onclick="fetchAPI('vehicle', 'Phương tiện')">
+    <button class="api-btn" id="btn-vehicle">
       <span class="api-icon">🚐</span>Phương tiện
     </button>
   </div>
@@ -120,8 +120,8 @@
       <span class="result-title" id="resultTitle"></span>
       <span class="count-pill"  id="countPill"></span>
       <div style="margin-left:auto;display:flex;gap:4px">
-        <button class="btn-xs" id="toggleBtn" onclick="toggleView()">⇄ JSON</button>
-        <button class="btn-xs" onclick="copyResult(event)">⎘ Copy</button>
+        <button class="btn-xs" id="toggleBtn">⇄ JSON</button>
+        <button class="btn-xs" id="btnCopy">⎘ Copy</button>
       </div>
     </div>
     <div id="tableView" class="table-wrap"></div>

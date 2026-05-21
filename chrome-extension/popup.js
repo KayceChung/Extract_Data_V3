@@ -63,6 +63,15 @@ function buildTable(arr) {
 let currentData = null;
 let isTableView = true;
 
+/* ── Wire up buttons after DOM ready ── */
+document.addEventListener('DOMContentLoaded', () => {
+  document.getElementById('btn-route')  .addEventListener('click', () => fetchAPI('route',   'Tuyến xe'));
+  document.getElementById('btn-driver') .addEventListener('click', () => fetchAPI('driver',  'Tài xế'));
+  document.getElementById('btn-vehicle').addEventListener('click', () => fetchAPI('vehicle', 'Phương tiện'));
+  document.getElementById('toggleBtn') .addEventListener('click', toggleView);
+  document.getElementById('btnCopy')   .addEventListener('click', copyResult);
+});
+
 /* ── Init: load status from storage ── */
 chrome.runtime.sendMessage({ type: 'getStatus' }, (data) => {
   const { lastSync, lastHeaders, syncError } = data || {};
@@ -211,9 +220,10 @@ function toggleView() {
   }
 }
 
-function copyResult(e) {
+function copyResult() {
+  const btn = document.getElementById('btnCopy');
   navigator.clipboard.writeText(JSON.stringify(currentData, null, 2)).then(() => {
-    e.target.textContent = '✓ Copied!';
-    setTimeout(() => { e.target.textContent = '⎘ Copy'; }, 1800);
+    btn.textContent = '✓ Copied!';
+    setTimeout(() => { btn.textContent = '⎘ Copy'; }, 1800);
   });
 }
