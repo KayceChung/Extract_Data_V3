@@ -4,13 +4,11 @@
   <meta charset="UTF-8">
   <style>
     * { box-sizing: border-box; margin: 0; padding: 0; }
-    body { width: 480px; padding: 14px; font-family: -apple-system, Arial, sans-serif; font-size: 13px; color: #1e1e1e; background: #fff; }
+    body { width: 580px; padding: 14px; font-family: -apple-system, Arial, sans-serif; font-size: 13px; color: #1e1e1e; background: #fff; }
 
     h3 { font-size: 14px; font-weight: 600; margin-bottom: 12px; display: flex; align-items: center; gap: 8px; }
 
-    /* Status rows */
     .row { display: flex; justify-content: space-between; align-items: center; padding: 5px 0; border-bottom: 1px solid #f0f0f0; }
-    .row:last-of-type { border-bottom: none; }
     .key { color: #555; font-size: 12px; }
     .val { font-weight: 500; color: #111; font-size: 12px; }
     .badge { display: inline-block; padding: 2px 10px; border-radius: 10px; font-size: 11px; font-weight: 500; }
@@ -22,15 +20,25 @@
 
     .divider { height: 1px; background: #eee; margin: 10px 0; }
 
-    /* Action buttons (top) */
-    .action-row { display: flex; gap: 6px; margin-bottom: 10px; }
+    .action-row { display: flex; gap: 6px; margin-bottom: 8px; }
     .btn-main { flex: 1; padding: 7px; background: #0078d4; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 500; }
     .btn-main:hover { background: #106ebe; }
     .btn-main:disabled { background: #aaa; cursor: not-allowed; }
     .btn-grey { flex: 1; padding: 7px; background: #6c757d; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 12px; font-weight: 500; }
     .btn-grey:hover { background: #5a6268; }
+    .btn-grey:disabled { background: #aaa; cursor: not-allowed; }
 
-    /* API grid */
+    #msg { font-size: 12px; min-height: 16px; text-align: center; margin-top: 4px; }
+    .msg-ok  { color: #155724; }
+    .msg-err { color: #721c24; }
+
+    /* Tabs */
+    .tabs { display: flex; gap: 0; border-bottom: 2px solid #dee2e6; margin-bottom: 12px; }
+    .tab-btn { padding: 7px 18px; font-size: 12px; font-weight: 500; background: none; border: none; border-bottom: 2px solid transparent; margin-bottom: -2px; cursor: pointer; color: #666; }
+    .tab-btn:hover { color: #0078d4; }
+    .tab-btn.active { color: #0078d4; border-bottom-color: #0078d4; }
+
+    /* Data tab */
     .section-title { font-size: 11px; font-weight: 600; color: #888; text-transform: uppercase; letter-spacing: .4px; margin-bottom: 7px; }
     .api-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; margin-bottom: 10px; }
     .api-btn { padding: 9px 4px; background: #f5f5f5; border: 1px solid #ddd; border-radius: 4px; cursor: pointer; text-align: center; font-size: 11px; font-weight: 500; color: #333; }
@@ -39,33 +47,46 @@
     .api-btn:disabled { opacity: .5; cursor: not-allowed; }
     .api-icon { font-size: 16px; display: block; margin-bottom: 3px; }
 
-    /* Result area */
-    #resultArea { display: none; }
+    /* Result area (shared) */
     .result-header { display: flex; align-items: center; gap: 6px; margin-bottom: 6px; }
     .result-title { font-size: 12px; font-weight: 600; }
     .count-pill { background: #e9ecef; color: #495057; padding: 1px 8px; border-radius: 10px; font-size: 11px; }
     .btn-xs { padding: 2px 8px; font-size: 11px; background: #e9ecef; border: none; border-radius: 3px; cursor: pointer; color: #333; }
     .btn-xs:hover { background: #dee2e6; }
 
-    .table-wrap { max-height: 280px; overflow: auto; border: 1px solid #dee2e6; border-radius: 4px; }
+    .table-wrap { max-height: 260px; overflow: auto; border: 1px solid #dee2e6; border-radius: 4px; }
     table { width: 100%; border-collapse: collapse; font-size: 11px; }
     thead th { position: sticky; top: 0; background: #f8f9fa; padding: 5px 8px; text-align: left; font-weight: 600; border-bottom: 2px solid #dee2e6; white-space: nowrap; z-index: 1; }
     tbody tr:nth-child(even) { background: #fafafa; }
     tbody tr:hover { background: #f0f4ff; }
     td { padding: 4px 8px; border-bottom: 1px solid #f0f0f0; max-width: 160px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
     .row-num { color: #aaa; text-align: right; min-width: 28px; user-select: none; }
+    .json-box { max-height: 260px; overflow: auto; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; padding: 8px; font-family: monospace; font-size: 11px; white-space: pre; word-break: break-all; }
 
-    .json-box { max-height: 280px; overflow: auto; background: #f8f9fa; border: 1px solid #dee2e6; border-radius: 4px; padding: 8px; font-family: monospace; font-size: 11px; white-space: pre; word-break: break-all; }
+    /* Trip tab */
+    .form-group { margin-bottom: 10px; }
+    .form-label { font-size: 11px; font-weight: 600; color: #555; margin-bottom: 4px; display: block; }
+    .form-row { display: flex; gap: 8px; align-items: center; margin-bottom: 10px; }
+    .form-row .form-label { margin-bottom: 0; white-space: nowrap; }
+    select, input[type=date] { border: 1px solid #ccc; border-radius: 4px; padding: 5px 8px; font-size: 12px; outline: none; }
+    select:focus, input[type=date]:focus { border-color: #0078d4; }
+    select { flex: 1; background: #fff; }
+    input[type=date] { background: #fff; }
+    .btn-refresh-sm { padding: 5px 8px; background: #e9ecef; border: 1px solid #ccc; border-radius: 4px; cursor: pointer; font-size: 12px; }
+    .btn-refresh-sm:hover { background: #dee2e6; }
+    .btn-fetch-trip { width: 100%; padding: 8px; background: #198754; color: #fff; border: none; border-radius: 4px; cursor: pointer; font-size: 13px; font-weight: 500; margin-bottom: 10px; }
+    .btn-fetch-trip:hover { background: #157347; }
+    .btn-fetch-trip:disabled { background: #aaa; cursor: not-allowed; }
 
-    /* Status messages */
-    #msg { font-size: 12px; min-height: 16px; text-align: center; margin-top: 6px; }
-    .msg-ok  { color: #155724; }
-    .msg-err { color: #721c24; }
-
-    /* Loading */
     .loading-row { display: flex; align-items: center; justify-content: center; gap: 6px; padding: 20px; color: #888; font-size: 12px; border: 1px dashed #ddd; border-radius: 4px; }
+    .empty-box { display: flex; align-items: center; justify-content: center; padding: 24px; border: 1px dashed #ddd; border-radius: 4px; color: #aaa; font-size: 12px; }
+
     .spinner { display: inline-block; width: 12px; height: 12px; border: 2px solid #888; border-top-color: transparent; border-radius: 50%; animation: spin .7s linear infinite; }
+    .spinner-sm { display: inline-block; width: 10px; height: 10px; border: 2px solid currentColor; border-top-color: transparent; border-radius: 50%; animation: spin .7s linear infinite; }
     @keyframes spin { to { transform: rotate(360deg); } }
+
+    .bks-cell { font-weight: 600; color: #0078d4; }
+    .err-inline { color: #dc3545; font-size: 12px; padding: 8px 0; }
   </style>
 </head>
 <body>
@@ -92,40 +113,101 @@
     <button class="btn-main" id="btnSync">↑ Gửi lại headers</button>
     <button class="btn-grey" id="btnCheck">⚡ Kiểm tra Railway</button>
   </div>
-
   <div id="msg"></div>
 
   <div class="divider"></div>
 
-  <!-- API buttons -->
-  <div class="section-title">Lấy dữ liệu</div>
-  <div class="api-grid">
-    <button class="api-btn" id="btn-route">
-      <span class="api-icon">🚌</span>Tuyến xe
-    </button>
-    <button class="api-btn" id="btn-driver">
-      <span class="api-icon">👤</span>Tài xế
-    </button>
-    <button class="api-btn" id="btn-vehicle">
-      <span class="api-icon">🚐</span>Phương tiện
-    </button>
+  <!-- Tabs -->
+  <div class="tabs">
+    <button class="tab-btn active" id="tabBtnData">Dữ liệu nhanh</button>
+    <button class="tab-btn"        id="tabBtnTrip">🗓 Chuyến xe</button>
   </div>
 
-  <div id="loadingRow" class="loading-row" style="display:none">
-    <span class="spinner"></span> Đang tải dữ liệu...
+  <!-- ═══ Tab: Dữ liệu nhanh ═══ -->
+  <div id="panelData">
+    <div class="section-title">Chọn API</div>
+    <div class="api-grid">
+      <button class="api-btn" id="btn-route">
+        <span class="api-icon">🚌</span>Tuyến xe
+      </button>
+      <button class="api-btn" id="btn-driver">
+        <span class="api-icon">👤</span>Tài xế
+      </button>
+      <button class="api-btn" id="btn-vehicle">
+        <span class="api-icon">🚐</span>Phương tiện
+      </button>
+    </div>
+
+    <div id="loadingRow" class="loading-row" style="display:none">
+      <span class="spinner"></span> Đang tải...
+    </div>
+    <div id="emptyBox" class="empty-box">Chọn một API ở trên để xem dữ liệu.</div>
+
+    <div id="resultArea" style="display:none">
+      <div class="result-header">
+        <span class="result-title" id="resultTitle"></span>
+        <span class="count-pill"   id="countPill"></span>
+        <div style="margin-left:auto;display:flex;gap:4px">
+          <button class="btn-xs" id="toggleBtn">⇄ JSON</button>
+          <button class="btn-xs" id="btnCopy">⎘ Copy</button>
+        </div>
+      </div>
+      <div id="tableView" class="table-wrap"></div>
+      <div id="jsonView"  class="json-box"   style="display:none"></div>
+    </div>
   </div>
 
-  <div id="resultArea">
-    <div class="result-header">
-      <span class="result-title" id="resultTitle"></span>
-      <span class="count-pill"  id="countPill"></span>
-      <div style="margin-left:auto;display:flex;gap:4px">
-        <button class="btn-xs" id="toggleBtn">⇄ JSON</button>
-        <button class="btn-xs" id="btnCopy">⎘ Copy</button>
+  <!-- ═══ Tab: Chuyến xe ═══ -->
+  <div id="panelTrip" style="display:none">
+
+    <div class="form-row">
+      <span class="form-label">Tuyến:</span>
+      <select id="routeSelect"><option value="">-- Đang tải... --</option></select>
+      <button class="btn-refresh-sm" id="btnRefreshRoutes" title="Tải lại tuyến">↻</button>
+    </div>
+
+    <div class="form-row">
+      <span class="form-label">Từ:</span>
+      <input type="date" id="dateFrom">
+      <span class="form-label" style="margin-left:8px">Đến:</span>
+      <input type="date" id="dateTo">
+    </div>
+
+    <button class="btn-fetch-trip" id="btnFetchTrips">🔍 Xem danh sách chuyến</button>
+
+    <div id="tripLoading" class="loading-row" style="display:none">
+      <span class="spinner"></span> <span id="tripLoadingMsg">Đang tải dữ liệu chuyến...</span>
+    </div>
+    <div id="tripEmpty" class="empty-box">Chọn tuyến & ngày rồi nhấn Xem chuyến.</div>
+    <div id="tripError" class="err-inline" style="display:none"></div>
+
+    <div id="tripResult" style="display:none">
+      <div class="result-header">
+        <span class="result-title">Danh sách chuyến</span>
+        <span class="count-pill" id="tripCount"></span>
+        <div style="margin-left:auto;display:flex;gap:4px">
+          <button class="btn-xs" id="btnCopyTrip">⎘ Copy JSON</button>
+        </div>
+      </div>
+      <div class="table-wrap">
+        <table>
+          <thead>
+            <tr>
+              <th>#</th>
+              <th>Ngày</th>
+              <th>Mã chuyến</th>
+              <th>Tuyến</th>
+              <th>Giờ đi</th>
+              <th>BKS</th>
+              <th>Tài xế</th>
+              <th>Trạng thái</th>
+            </tr>
+          </thead>
+          <tbody id="tripTableBody"></tbody>
+        </table>
       </div>
     </div>
-    <div id="tableView" class="table-wrap"></div>
-    <div id="jsonView"  class="json-box"   style="display:none"></div>
+
   </div>
 
   <script src="popup.js"></script>
