@@ -1,6 +1,6 @@
 // Must match background.js
-const RELAY_URL = 'https://YOUR-APP.railway.app';
-const SECRET    = 'your-secret-here';
+const RELAY_URL = 'https://extractdatav3-production.up.railway.app';
+const SECRET    = 'NguyenThiThaoNhi';
 
 function timeAgo(isoStr) {
   if (!isoStr) return '—';

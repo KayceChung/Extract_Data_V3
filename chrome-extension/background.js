@@ -1,6 +1,6 @@
 // === CONFIG — thay bằng URL Railway thực tế của bạn ===
-const RELAY_URL = 'https://YOUR-APP.railway.app'; // ← đổi sau khi deploy
-const SECRET    = 'your-secret-here';             // ← phải khớp với VEXERE_SECRET trên Railway
+const RELAY_URL = 'https://extractdatav3-production.up.railway.app';
+const SECRET    = 'NguyenThiThaoNhi';
 // ======================================================
 
 let sessionLastToken = null; // dedup within service worker lifecycle
